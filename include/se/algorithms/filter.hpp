@@ -77,7 +77,6 @@ namespace algorithms {
         int my_start = thread_start[threadid] = (threadid) * num_elem / num_threads;
         int my_end   = (threadid+1) * num_elem / num_threads;
         int count = 0;
-#pragma omp simd
         for(int i = my_start; i < my_end; ++i) {
           if(satisfies(block_array[i], ps...)){
             temp[my_start + count] = block_array[i];

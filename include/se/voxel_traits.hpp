@@ -33,7 +33,50 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _VOXEL_TRAITS_
 #include "utils/math_utils.h"
 
+#ifndef SE_NEARPLANE
+#define SE_NEARPLANE 0.1f
+#define SE_FARPLANE 10.0f
+#endif
+
+namespace se {
+
 template <class VoxelTraits>
 struct voxel_traits{ };
+
+/******************************************************************************
+*
+* KFusion Truncated Signed Distance Function voxel traits
+*
+****************************************************************************/
+
+typedef struct {
+	float x;
+	float y;
+} SDF;
+
+template <> struct voxel_traits<SDF> {
+	typedef SDF value_type;
+	static inline value_type empty() { return {1.f, -1.f}; }
+	static inline value_type initValue() { return {1.f, 0.f}; }
+};
+
+/******************************************************************************
+*
+* Bayesian Fusion voxel traits and algorithm specific defines
+*
+****************************************************************************/
+
+typedef struct {
+	float x;
+	double y;
+} BayesianFusion;
+
+template <> struct voxel_traits<BayesianFusion> {
+	typedef BayesianFusion value_type;
+	static inline value_type empty() { return {0.f, 0.f}; }
+	static inline value_type initValue() { return {0.f, 0.f}; }
+};
+
+}
 
 #endif

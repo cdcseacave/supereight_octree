@@ -11,12 +11,22 @@ namespace se {
     class Image {
 
       public:
-        Image(const unsigned w, const unsigned h) : width_(w), height_(h) {
+        Image() {
+        }
+        Image(const unsigned w, const unsigned h) {
+          resize(w, h);
+        }
+        Image(const unsigned w, const unsigned h, const T& val) {
+          resize(w, h, val);
+        }
+
+        void resize(const unsigned w, const unsigned h) {
+          width_ = w; height_ = h;
           assert(width_ > 0 && height_ > 0);
           data_.resize(width_ * height_);
         }
-
-        Image(const unsigned w, const unsigned h, const T& val) : width_(w), height_(h) {
+        void resize(const unsigned w, const unsigned h, const T& val) {
+          width_ = w; height_ = h;
           assert(width_ > 0 && height_ > 0);
           data_.resize(width_ * height_, val);
         }
@@ -27,7 +37,8 @@ namespace se {
         T&       operator()(const int x, const int y)       { return data_[x + y*width_]; }
         const T& operator()(const int x, const int y) const { return data_[x + y*width_]; }
 
-        std::size_t size()   const   { return width_ * height_; };
+        bool        empty()  const { return data_.empty(); };
+        std::size_t size()   const { return width_ * height_; };
         int         width () const { return width_;  };
         int         height() const { return height_; };
 
@@ -35,8 +46,7 @@ namespace se {
         const T* data() const { return data_.data(); }
 
       private:
-        const int width_;
-        const int height_;
+        int width_, height_;
         std::vector<T, Eigen::aligned_allocator<T> > data_;
     };
 

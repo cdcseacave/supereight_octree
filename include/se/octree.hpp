@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "utils/morton_utils.hpp"
 #include "octant_ops.hpp"
 
-#if defined(_OPENMP) && !defined(__clang__)
+#if defined(_OPENMP) && !defined(__clang__) && !defined(_MSC_VER)
 #include <parallel/algorithm>
 #endif
 
@@ -193,7 +193,7 @@ public:
    * \param active boolean switch. Set to true to retrieve visible, allocated 
    * blocks, false to retrieve all allocated blocks.
    */
-  void getBlockList(std::vector<VoxelBlock<T> *>& blocklist, bool active);
+  void getBlockList(std::vector<VoxelBlock<T> *>& blocklist, bool active) const;
   MemoryPool<VoxelBlock<T> >& getBlockBuffer(){ return block_buffer_; };
   MemoryPool<Node<T> >& getNodesBuffer(){ return nodes_buffer_; };
   /*! \brief Computes the morton code of the block containing voxel 
@@ -265,8 +265,8 @@ private:
 
   int leavesCountRecursive(Node<T> *);
   int nodeCountRecursive(Node<T> *);
-  void getActiveBlockList(Node<T> *, std::vector<VoxelBlock<T> *>& blocklist);
-  void getAllocatedBlockList(Node<T> *, std::vector<VoxelBlock<T> *>& blocklist);
+  void getActiveBlockList(Node<T> *, std::vector<VoxelBlock<T> *>& blocklist) const;
+  void getAllocatedBlockList(Node<T> *, std::vector<VoxelBlock<T> *>& blocklist) const;
 
   void deleteNode(Node<T> ** node);
   void deallocateTree(){ deleteNode(&root_); }
@@ -792,7 +792,7 @@ void Octree<T>::reserveBuffers(const int n){
 template <typename T>
 bool Octree<T>::allocate(key_t *keys, int num_elem){
 
-#if defined(_OPENMP) && !defined(__clang__)
+#if defined(_OPENMP) && !defined(__clang__) && !defined(_MSC_VER)
   __gnu_parallel::sort(keys, keys+num_elem);
 #else
 std::sort(keys, keys+num_elem);
@@ -856,7 +856,7 @@ bool Octree<T>::allocate_level(key_t* keys, int num_tasks, int target_level){
 }
 
 template <typename T>
-void Octree<T>::getBlockList(std::vector<VoxelBlock<T>*>& blocklist, bool active){
+void Octree<T>::getBlockList(std::vector<VoxelBlock<T>*>& blocklist, bool active) const {
   Node<T> * n = root_;
   if(!n) return;
   if(active) getActiveBlockList(n, blocklist);
@@ -865,7 +865,7 @@ void Octree<T>::getBlockList(std::vector<VoxelBlock<T>*>& blocklist, bool active
 
 template <typename T>
 void Octree<T>::getActiveBlockList(Node<T> *n,
-    std::vector<VoxelBlock<T>*>& blocklist){
+    std::vector<VoxelBlock<T>*>& blocklist) const {
   using tNode = Node<T>;
   if(!n) return;
   std::queue<tNode *> q;
@@ -888,7 +888,7 @@ void Octree<T>::getActiveBlockList(Node<T> *n,
 
 template <typename T>
 void Octree<T>::getAllocatedBlockList(Node<T> *,
-    std::vector<VoxelBlock<T>*>& blocklist){
+    std::vector<VoxelBlock<T>*>& blocklist) const{
   for(unsigned int i = 0; i < block_buffer_.size(); ++i) {
       blocklist.push_back(block_buffer_[i]);
     }

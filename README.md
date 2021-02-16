@@ -1,5 +1,5 @@
 # supereight-octree: a fast octree library
-This is the core library of [supereight](https://github.com/emanuelev/supereight).
+This is the core library of [supereight](https://github.com/emanuelev/supereight), simplified and completed with volume integration code for both TSDF and Bayesian fusion.
 
 For more details on the library please refer to the author's paper 
 [Efficient Octree-Based Volumetric SLAM Supporting Signed-Distance and
@@ -22,8 +22,27 @@ the this software that are released under MIT licence, see individual headers
 for which licence applies.
 
 # Dependencies
-The following packages are required to build the library:
-* CMake >= 3.10
+The library is header only, and the following packages are used:
 * Eigen3 
-* Sophus
 * OpenMP (optional)
+
+# Usage example
+Given a list of camera poses and the corresponding depth-maps, a mesh can be generated as:
+```
+#include <se/fusion/bayesian/volume_impl.hpp>
+int main() {
+  Eigen::AlignedBox3f aabb;
+  //TODO: compute scene bounding box
+  const Point3f size = aabb.sizes();
+  const float dim = std::max(size.x(), std::max(size.y(), size.z()));
+  const Eigen::Vector2i depthMapSize(256, 144);
+  se::Volume<se::BayesianFusion> volume;
+  volume.Init(depthMapSize, -aabb.min(), 512, dim);
+  for (int i=0; i<numCameras; ++i) {
+    volume.Integrate(cameras[i].K, cameras[i].pose, depthMaps[i].ptr<float>(), cameras[i].timestamp);
+  }
+  std::vector<Eigen::Vector3f> vertices;
+  std::vector<Eigen::Vector3i> faces;
+  volume.ExportMesh(vertices, faces);
+}
+```

@@ -72,10 +72,10 @@ inline uint64_t compute_morton(uint64_t x,
 }
 
 static inline void compute_prefix(const se::key_t * in, se::key_t * out,
-    unsigned int num_keys, const se::key_t mask){
+    unsigned num_keys, const se::key_t mask){
 
 #pragma omp parallel for
-  for (unsigned int i = 0; i < num_keys; i++){
+  for (int i = 0; i < num_keys; i++){
     out[i] = in[i] & mask;
   }
 }
