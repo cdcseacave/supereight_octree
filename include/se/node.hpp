@@ -119,7 +119,7 @@ class VoxelBlock: public Node<T> {
     value_type data(const int i) const;
     void data(const int i, const value_type& value);
 
-    void active(const bool a){ active_ = a; }
+    void active(const bool a) { active_ = a; }
     bool active() const { return active_; }
 
     value_type * getBlockRawPtr(){ return voxel_block_; }
@@ -139,28 +139,25 @@ class VoxelBlock: public Node<T> {
 template <typename T>
 inline typename VoxelBlock<T>::value_type 
 VoxelBlock<T>::data(const Eigen::Vector3i& pos) const {
-  Eigen::Vector3i offset = pos - coordinates_;
-  const value_type& data = voxel_block_[offset(0) + offset(1)*side +
-                                         offset(2)*sideSq];
-  return data;
+  const Eigen::Vector3i offset = pos - coordinates_;
+  return voxel_block_[offset(0) + offset(1)*side + offset(2)*sideSq];
 }
 
 template <typename T>
 inline void VoxelBlock<T>::data(const Eigen::Vector3i& pos, 
-                                const value_type &value){
-  Eigen::Vector3i offset = pos - coordinates_;
+                                const value_type& value) {
+  const Eigen::Vector3i offset = pos - coordinates_;
   voxel_block_[offset(0) + offset(1)*side + offset(2)*sideSq] = value;
 }
 
 template <typename T>
 inline typename VoxelBlock<T>::value_type 
 VoxelBlock<T>::data(const int i) const {
-  const value_type& data = voxel_block_[i];
-  return data;
+  return voxel_block_[i];
 }
 
 template <typename T>
-inline void VoxelBlock<T>::data(const int i, const value_type &value){
+inline void VoxelBlock<T>::data(const int i, const value_type &value) {
   voxel_block_[i] = value;
 }
 }

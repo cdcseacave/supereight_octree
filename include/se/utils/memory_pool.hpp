@@ -56,9 +56,9 @@ template <typename BlockType>
       size_t size() const { return current_block_; };
 
       BlockType* operator[](const size_t i) const {
-        const int page_idx = i / pagesize_;
-        const int ptr_idx = i % pagesize_;
-        return pages_[page_idx] + (ptr_idx);
+        const size_t page_idx = i / pagesize_;
+        const size_t ptr_idx = i % pagesize_;
+        return pages_[page_idx] + ptr_idx;
       }
 
       void reserve(const size_t n){
@@ -66,13 +66,9 @@ template <typename BlockType>
         if(requires_realloc) expand(n);
       }
 
-      BlockType * acquire_block(){
+      BlockType* acquire_block(){
         // Fetch-add returns the value before increment
-        int current = current_block_.fetch_add(1);
-        const int page_idx = current / pagesize_;
-        const int ptr_idx = current % pagesize_;
-        BlockType * ptr = pages_[page_idx] + (ptr_idx);
-        return ptr;
+        return operator[](current_block_.fetch_add(1));
       }
 
     private:

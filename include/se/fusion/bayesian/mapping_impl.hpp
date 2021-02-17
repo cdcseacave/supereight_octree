@@ -88,8 +88,7 @@ float interpDepth(const se::Image<float>& depth, const Eigen::Vector2f proj) {
   if (fabs(d - d11) < interp_thresh && fabs(d - d12) < interp_thresh &&
       fabs(d - d21) < interp_thresh && fabs(d - d22) < interp_thresh) 
     return d;
-  else 
-    return depth[int(proj.x() + 0.5f) + depth.width()*int(proj.y()+0.5f)];
+  return depth[int(proj.x() + 0.5f) + depth.width()*int(proj.y()+0.5f)];
 
   // Non-Filtering version
   // return  1.f / 
@@ -134,16 +133,15 @@ static inline float const_offset_integral(float t){
 }
 
 static inline float bspline_memoized(float t){
-  float value = 0.f;
   constexpr float inverseRange = 1/6.f;
   if(t >= -3.0f && t <= 3.0f) {
     unsigned int idx = ((t + 3.f)*inverseRange)*(bspline_num_samples - 1) + 0.5f;
     return bspline_lookup[idx];
   } 
-  else if(t > 3) {
-    value = 1.f;
+  if(t > 3) {
+    return 1.f;
   }
-  return value;
+  return 0.f;
 }
 
 static inline float HNew(const float val,const  float ){
@@ -166,16 +164,13 @@ static inline float applyWindow(const float occupancy, const float ,
 
 struct bfusion_update {
   template <typename DataHandlerT>
-  void operator()(DataHandlerT& handler, const Eigen::Vector3i&, 
-      const Eigen::Vector3f& pos, const Eigen::Vector2f& pixel) {
-
+  void operator()(DataHandlerT& handler, const Eigen::Vector3f& pos, const Eigen::Vector2f& pixel) {
     const Eigen::Vector2i px = pixel.cast <int> ();
     const float depthSample = depth[px(0) + depthSize(0)*px(1)];
     if (depthSample <=  0)
         return;
-
     const float diff = (pos(2) - depthSample)
-      * std::sqrt( 1 + se::math::sq(pos(0) / pos(2)) + se::math::sq(pos(1) / pos(2)));
+      * std::sqrt(1 + se::math::sq(pos(0) / pos(2)) + se::math::sq(pos(1) / pos(2)));
     float sigma = se::math::clamp(noiseFactor * se::math::sq(pos(2)), 
         2*voxelsize, 0.05f);
     float sample = HNew(diff/sigma, pos(2));
@@ -191,10 +186,10 @@ struct bfusion_update {
   } 
 
   bfusion_update(const float * d, const Eigen::Vector2i framesize, float n, 
-      float t, float vs): depth(d), depthSize(framesize), noiseFactor(n), 
-  timestamp(t), voxelsize(vs){};
+      float t, float vs) : depth(d), depthSize(framesize), noiseFactor(n), 
+  timestamp(t), voxelsize(vs) {}
 
-  const float * depth;
+  const float* depth;
   Eigen::Vector2i depthSize;
   float noiseFactor;
   float timestamp;

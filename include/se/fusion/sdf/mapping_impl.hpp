@@ -36,9 +36,7 @@ namespace se {
 
 struct sdf_update {
   template <typename DataHandlerT>
-  void operator()(DataHandlerT &handler, const Eigen::Vector3i &,
-                  const Eigen::Vector3f &pos, const Eigen::Vector2f &pixel) {
-
+  void operator()(DataHandlerT &handler, const Eigen::Vector3f &pos, const Eigen::Vector2f &pixel) {
     const Eigen::Vector2i px = pixel.cast<int>();
     const float depthSample = depth[px(0) + depthSize(0) * px(1)];
     if (depthSample <= 0)
@@ -58,7 +56,7 @@ struct sdf_update {
   }
 
   sdf_update(const float *d, const Eigen::Vector2i framesize, float m, int mw)
-      : depth(d), depthSize(framesize), mu(m), maxweight(mw){};
+      : depth(d), depthSize(framesize), mu(m), maxweight(mw) {}
 
   const float *depth;
   Eigen::Vector2i depthSize;

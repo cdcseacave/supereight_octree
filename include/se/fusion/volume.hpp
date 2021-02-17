@@ -88,13 +88,14 @@ void Volume<FieldType>::ExportMeshImpl(std::vector<Eigen::Vector3f>& vertices,
 
   se::algorithms::marching_cube(volume, select, inside, triangles);
 
+  const Eigen::Vector3f trans = globalTranslation.topRightCorner<3,1>();
   std::unordered_map<Eigen::Vector3f, uint32_t> mapVertices;
   for (const Triangle &t : triangles) {
     Eigen::Vector3i face;
     for (int i = 0; i < 3; ++i) {
       auto ret = mapVertices.emplace(t.vertexes[i], vertices.size());
       if (ret.second)
-        vertices.emplace_back(t.vertexes[i]);
+        vertices.emplace_back(t.vertexes[i] - trans);
       face[invert ? 2-i : i] = ret.first->second;
     }
     faces.emplace_back(face);
