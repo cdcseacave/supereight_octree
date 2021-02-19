@@ -58,7 +58,7 @@ template <typename FieldType,
 size_t buildOctantList(HashType* allocationList, size_t reserved,
     OctreeT<FieldType>& volume, const Eigen::Matrix4f& pose, 
     const float *depthmap, const Eigen::Vector2i &imageSize, 
-    StepF compute_stepsize, DepthF step_to_depth, float band) {
+    StepF compute_stepsize, DepthF step_to_depth, float mu) {
 
   const float voxelSize = volume.dim() / volume.size();
   const float inverseVoxelSize = 1 / voxelSize;
@@ -83,18 +83,22 @@ size_t buildOctantList(HashType* allocationList, size_t reserved,
         continue;
       int tree_depth = max_depth; 
       float stepsize = voxelSize;
-      Eigen::Vector3f worldVertex = (pose * Eigen::Vector3f((x + 0.5f) * depth, 
-            (y + 0.5f) * depth, depth).homogeneous()).head<3>();
 
-      Eigen::Vector3f direction = (camera - worldVertex).normalized();
+      #if 1
+      const float band = 4 * mu;
+      #else
+      const float band = 2 * se::math::clamp(mu * se::math::sq(depth), 2 * voxelSize, 8 * voxelSize);
+      #endif
+
+      const Eigen::Vector3f worldVertex = (pose * Eigen::Vector3f((x + 0.5f) * depth, 
+            (y + 0.5f) * depth, depth).homogeneous()).head<3>();
+      const Eigen::Vector3f direction = (camera - worldVertex).normalized();
       const Eigen::Vector3f origin = worldVertex - (band * 0.5f) * direction;
       const float dist = (camera - origin).norm(); 
       Eigen::Vector3f step = direction*stepsize;
 
       Eigen::Vector3f voxelPos = origin;
-      float travelled = 0.f;
-      for(; travelled < dist; travelled += stepsize){
-
+      for(float travelled = 0.f; travelled < dist; travelled += stepsize){
         Eigen::Vector3f voxelScaled = (voxelPos * inverseVoxelSize).array().floor();
         if((voxelScaled.x() < size) && (voxelScaled.y() < size) &&
            (voxelScaled.z() < size) && (voxelScaled.x() >= 0) &&
@@ -103,11 +107,10 @@ size_t buildOctantList(HashType* allocationList, size_t reserved,
           auto node_ptr = volume.fetch_octant(voxel.x(), voxel.y(), voxel.z(), 
               tree_depth);
           if(!node_ptr){
-            HashType k = volume.hash(voxel.x(), voxel.y(), voxel.z(), 
-                std::min(tree_depth, leaves_depth));
-            unsigned int idx = voxelCount++;
+            const unsigned idx = voxelCount++;
             if(idx < reserved) {
-              allocationList[idx] = k;
+              allocationList[idx] = volume.hash(voxel.x(), voxel.y(), voxel.z(), 
+                std::min(tree_depth, leaves_depth));
             }
           } else if(tree_depth >= leaves_depth) { 
             static_cast<se::VoxelBlock<FieldType>*>(node_ptr)->active(true);

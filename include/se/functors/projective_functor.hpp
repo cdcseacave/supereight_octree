@@ -127,9 +127,9 @@ namespace functor {
       for(int i = 0; i < 8; ++i) {
         const Eigen::Vector3i dir =  Eigen::Vector3i((i & 1) > 0, (i & 2) > 0, (i & 4) > 0);
         const Eigen::Vector3f vox_cam = base_cam + dir.cast<float>().cwiseProduct(delta); 
-        const Eigen::Vector3f pix_hom = basepix_hom + dir.cast<float>().cwiseProduct(delta_c); 
         if (vox_cam(2) < 0.0001f)
           continue;
+        const Eigen::Vector3f pix_hom = basepix_hom + dir.cast<float>().cwiseProduct(delta_c); 
         const float inverse_depth = 1.f / pix_hom(2);
         const Eigen::Vector2f pixel = Eigen::Vector2f(
             pix_hom(0) * inverse_depth + 0.5f,

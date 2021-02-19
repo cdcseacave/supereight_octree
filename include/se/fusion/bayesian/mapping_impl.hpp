@@ -169,9 +169,8 @@ struct bfusion_update {
     const float depthSample = depth[px(0) + depthSize(0)*px(1)];
     if (depthSample <=  0)
         return;
-    const float diff = (pos(2) - depthSample)
-      * std::sqrt(1 + se::math::sq(pos(0) / pos(2)) + se::math::sq(pos(1) / pos(2)));
-    float sigma = se::math::clamp(noiseFactor * se::math::sq(pos(2)), 
+    const float diff = (pos(2) - depthSample);
+    const float sigma = se::math::clamp(noiseFactor * se::math::sq(pos(2)), 
         2*voxelsize, 0.05f);
     float sample = HNew(diff/sigma, pos(2));
     if(sample == 0.5f)

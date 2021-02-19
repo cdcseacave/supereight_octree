@@ -22,7 +22,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  * 
  * */
-
 #ifndef ACTIVE_LIST_HPP
 #define ACTIVE_LIST_HPP
 
@@ -37,10 +36,26 @@ namespace algorithms {
   template <typename VoxelBlockType>
   bool in_frustum(const VoxelBlockType* v, float voxelSize, 
       const Eigen::Matrix4f& camera, const Eigen::Vector2i& frameSize) {
+    #if 1
     const Eigen::Vector3f v_camera = camera.topLeftCorner<3, 4>() * 
           (v->coordinates().template cast<float>()*voxelSize).homogeneous();
     const Eigen::Vector2i px = v_camera.hnormalized().template cast<int>();
     return px(0) >= 0 && px(0) < frameSize(0) && px(1) >= 0 && px(1) < frameSize(1);
+    #else
+    const int side = VoxelBlockType::side;
+    const static Eigen::Matrix<int, 4, 8> offsets = 
+      (Eigen::Matrix<int, 4, 8>() << 0, side, 0, side, 0, side, 0, side,
+                                     0, 0, side, side, 0, 0, side, side,
+                                     0, 0, 0, 0, side, side, side, side,
+                                     0, 0, 0, 0, 0, 0, 0, 0).finished();
+    Eigen::Matrix<float, 4, 8> v_camera = camera *  
+      Eigen::Vector4f(voxelSize, voxelSize, voxelSize, 1.f).asDiagonal() * 
+       (offsets.colwise() + v->coordinates().homogeneous()).template cast<float>();
+    v_camera.row(0).array() /= v_camera.row(2).array();
+    v_camera.row(1).array() /= v_camera.row(2).array();
+    return ((v_camera.row(0).array() >= 0.f && v_camera.row(0).array() < frameSize.x()) && 
+     (v_camera.row(1).array() >= 0.f && v_camera.row(1).array() < frameSize.y())).any();
+    #endif
   }
 
   template <typename ValueType, typename P>

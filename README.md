@@ -34,9 +34,9 @@ int main() {
   Eigen::AlignedBox3f aabb;
   //TODO: compute scene bounding box
   const Point3f size = aabb.sizes();
-  const float dim = std::max(size.x(), std::max(size.y(), size.z()));
+  const float dim = size.maxCoeff();
   const Eigen::Vector2i depthMapSize(256, 144);
-  se::Volume<se::BayesianFusion> volume;
+  se::Volume volume;
   volume.Init(depthMapSize, -aabb.min(), 512, dim);
   for (int i=0; i<numCameras; ++i) {
     volume.Integrate(cameras[i].K, cameras[i].pose, depthMaps[i].ptr<float>(), cameras[i].timestamp);

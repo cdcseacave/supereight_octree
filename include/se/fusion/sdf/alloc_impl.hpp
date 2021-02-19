@@ -75,35 +75,30 @@ buildAllocationList(HashType *allocationList, size_t reserved,
       const float depth = depthmap[x + y * imageSize.x()];
       if (depth <= 0)
         continue;
-      Eigen::Vector3f worldVertex =
+      const Eigen::Vector3f worldVertex =
           (pose *
            Eigen::Vector3f((x + 0.5f) * depth, (y + 0.5f) * depth, depth)
                .homogeneous())
               .head<3>();
 
-      Eigen::Vector3f direction = (camera - worldVertex).normalized();
+      const Eigen::Vector3f direction = (camera - worldVertex).normalized();
       const Eigen::Vector3f origin = worldVertex - (band * 0.5f) * direction;
       const Eigen::Vector3f step = (direction * band) / numSteps;
 
-      Eigen::Vector3i voxel;
       Eigen::Vector3f voxelPos = origin;
       for (int i = 0; i < numSteps; i++) {
-        Eigen::Vector3f voxelScaled =
-            (voxelPos * inverseVoxelSize).array().floor();
-        if ((voxelScaled.x() < size) && (voxelScaled.y() < size) &&
-            (voxelScaled.z() < size) && (voxelScaled.x() >= 0) &&
-            (voxelScaled.y() >= 0) && (voxelScaled.z() >= 0)) {
-          voxel = voxelScaled.cast<int>();
+        const Eigen::Vector3i voxel =
+            (voxelPos * inverseVoxelSize).array().floor().cast<int>();
+        if ((voxel.x() < size) && (voxel.y() < size) &&
+            (voxel.z() < size) && (voxel.x() >= 0) &&
+            (voxel.y() >= 0) && (voxel.z() >= 0)) {
           se::VoxelBlock<FieldType> *n =
               volume.fetch(voxel.x(), voxel.y(), voxel.z());
           if (!n) {
-            HashType k =
-                volume.hash(voxel.x(), voxel.y(), voxel.z(), block_scale);
-            unsigned int idx = voxelCount++;
-            if (idx < reserved) {
-              allocationList[idx] = k;
-            } else
+            const unsigned idx = voxelCount++;
+            if (idx >= reserved)
               break;
+            allocationList[idx] = volume.hash(voxel.x(), voxel.y(), voxel.z(), block_scale);
           } else {
             n->active(true);
           }
@@ -112,7 +107,7 @@ buildAllocationList(HashType *allocationList, size_t reserved,
       }
     }
   }
-  const unsigned int written = voxelCount;
+  const unsigned written = voxelCount;
   return written >= reserved ? reserved : written;
 }
 

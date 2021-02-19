@@ -54,28 +54,23 @@ inline uint64_t compact(uint64_t value) {
   return x;
 }
 
-inline Eigen::Vector3i unpack_morton(uint64_t code){
+inline Eigen::Vector3i unpack_morton(uint64_t code) {
   return Eigen::Vector3i(compact(code >> 0ull), compact(code >> 1ull), 
                     compact(code >> 2ull));
 }
 
 inline uint64_t compute_morton(uint64_t x, 
-    uint64_t y, uint64_t z){
-  uint64_t code = 0;
-
+    uint64_t y, uint64_t z) {
   x = expand(x);
   y = expand(y) << 1;
   z = expand(z) << 2;
-
-  code = x | y | z;
-  return code;
+  return x | y | z;
 }
 
 static inline void compute_prefix(const se::key_t * in, se::key_t * out,
-    unsigned num_keys, const se::key_t mask){
-
+    unsigned num_keys, const se::key_t mask) {
 #pragma omp parallel for
-  for (int i = 0; i < num_keys; i++){
+  for (int i = 0; i < num_keys; i++) {
     out[i] = in[i] & mask;
   }
 }

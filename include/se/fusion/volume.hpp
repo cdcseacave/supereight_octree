@@ -11,7 +11,7 @@
 namespace se {
 
 template <typename FieldType>
-class Volume {
+class TVolume {
 public:
   // Initializes the octree attributes
   //  - size number of voxels per side of the cube
@@ -45,8 +45,8 @@ public:
 
 
 template <typename FieldType>
-void Volume<FieldType>::Init(const Eigen::Vector2i &_imageSize, const Eigen::Vector3f &trans,
-                             int size, float dim) {
+void TVolume<FieldType>::Init(const Eigen::Vector2i &_imageSize, const Eigen::Vector3f &trans,
+                              int size, float dim) {
   imageSize = _imageSize;
   globalTranslation = Eigen::Matrix4f::Identity();
   globalTranslation.topRightCorner<3, 1>() = trans;
@@ -57,7 +57,7 @@ void Volume<FieldType>::Init(const Eigen::Vector2i &_imageSize, const Eigen::Vec
 }
 
 template <typename FieldType>
-void Volume<FieldType>::Render(const Eigen::Matrix4f &K, const Eigen::Matrix4f &_pose, float mu) {
+void TVolume<FieldType>::Render(const Eigen::Matrix4f &K, const Eigen::Matrix4f &_pose, float mu) {
   const Eigen::Matrix4f pose = _pose * globalTranslation.inverse();
   raycastKernel(volume, vertices, normals, (K * pose).inverse(),
       SE_NEARPLANE, SE_FARPLANE, mu);
@@ -65,8 +65,8 @@ void Volume<FieldType>::Render(const Eigen::Matrix4f &K, const Eigen::Matrix4f &
 
 template <typename FieldType>
 template <bool invert>
-void Volume<FieldType>::ExportMeshImpl(std::vector<Eigen::Vector3f>& vertices,
-                                       std::vector<Eigen::Vector3i>& faces) const {
+void TVolume<FieldType>::ExportMeshImpl(std::vector<Eigen::Vector3f>& vertices,
+                                        std::vector<Eigen::Vector3i>& faces) const {
   struct Triangle {
     Eigen::Vector3f vertexes[3];
   };

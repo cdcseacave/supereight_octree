@@ -8,9 +8,11 @@
 
 namespace se {
 
+using Volume = TVolume<SDF>;
+
 template <>
-void Volume<SDF>::Integrate(const Eigen::Matrix4f &K, const Eigen::Matrix4f &_pose,
-                            const float *depthMap, float /*timestamp*/, float mu) {
+void Volume::Integrate(const Eigen::Matrix4f &K, const Eigen::Matrix4f &_pose,
+                       const float *depthMap, float /*timestamp*/, float mu) {
   const Eigen::Matrix4f pose = _pose * globalTranslation.inverse();
   const float voxelSize = volume.dim() / volume.size();
   const int num_vox_per_pix =
@@ -27,8 +29,8 @@ void Volume<SDF>::Integrate(const Eigen::Matrix4f &K, const Eigen::Matrix4f &_po
 }
 
 template <>
-void Volume<SDF>::ExportMesh(std::vector<Eigen::Vector3f>& vertices,
-                             std::vector<Eigen::Vector3i>& faces) const {
+void Volume::ExportMesh(std::vector<Eigen::Vector3f>& vertices,
+                        std::vector<Eigen::Vector3i>& faces) const {
   ExportMeshImpl<false>(vertices, faces);
 }
 
